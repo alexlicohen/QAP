@@ -1,6 +1,9 @@
 FROM ubuntu:trusty
 MAINTAINER John Pellman <john.pellman@childmind.org>
 
+ENV http_proxy 'http://proxy.tch.harvard.edu:3128'
+ENV https_proxy 'http://proxy.tch.harvard.edu:3128'
+
 ENV AFNIPATH /opt/afni/bin/
 ENV PATH /code:/opt/afni/bin:/usr/local/bin/miniconda/bin:${PATH}
 
@@ -14,6 +17,12 @@ RUN apt-get install -y pkg-config graphviz gsl-bin \
     netpbm libpng-dev libfreetype6-dev libxml2-dev libxslt1-dev python-dev \
     build-essential g++ libxft2 git
 
+# install afni
+RUN wget http://afni.nimh.nih.gov/pub/dist/tgz/linux_openmp_64.tgz && \
+    tar xzvf linux_openmp_64.tgz && mkdir -p /opt/afni && \
+    mv linux_openmp_64/ /opt/afni/bin && \
+    rm -rf linux_openmp_64.tgz
+
 # install miniconda
 RUN wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh && \
     bash Miniconda-3.8.3-Linux-x86_64.sh -b -p /usr/local/bin/miniconda && \
@@ -21,17 +30,11 @@ RUN wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh && \
 
 # install python requirements
 RUN conda install -y pip scipy lockfile
-RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn html5lib==1.0b10 pyPdf2 xhtml2pdf indi-tools ConfigParser
+RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn pyPdf2 xhtml2pdf indi-tools ConfigParser
 
 # the first time nipype runs it will create a configuration directory, do it here
 # to avoid problems in the future
 RUN /usr/local/bin/miniconda/bin/python -c "import nipype" 2> /dev/null
-
-# install afni
-RUN wget http://afni.nimh.nih.gov/pub/dist/tgz/linux_openmp_64.tgz && \
-    tar xzvf linux_openmp_64.tgz && mkdir -p /opt/afni && \
-    mv linux_openmp_64/ /opt/afni/bin && \
-    rm -rf linux_openmp_64.tgz
 
 #install latest version of qap
 RUN cd /tmp/ && \

@@ -79,7 +79,7 @@ print(args)
 c = yaml.load(open(os.path.realpath(args.pipeline_file), 'r'))
 
 # set the parameters using the command line arguments
-c['output_directory'] = create_dir(args.output_dir, "output")
+c['output_directory']  = os.path.abspath(c['output_directory'])
 c['num_subjects_per_bundle'] = int(args.n_cpus)
 if( args.save_working_dir == True ):
     c['write_all_outputs'] = True
