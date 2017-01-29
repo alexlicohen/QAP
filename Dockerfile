@@ -1,8 +1,8 @@
 FROM ubuntu:trusty
 MAINTAINER John Pellman <john.pellman@childmind.org>
 
-ENV http_proxy 'http://proxy.tch.harvard.edu:3128'
-ENV https_proxy 'http://proxy.tch.harvard.edu:3128'
+# ENV http_proxy 'http://proxy.tch.harvard.edu:3128'
+# ENV https_proxy 'http://proxy.tch.harvard.edu:3128'
 
 ENV AFNIPATH /opt/afni/bin/
 ENV PATH /code:/opt/afni/bin:/usr/local/bin/miniconda/bin:${PATH}
@@ -23,24 +23,6 @@ RUN wget http://afni.nimh.nih.gov/pub/dist/tgz/linux_openmp_64.tgz && \
     mv linux_openmp_64/ /opt/afni/bin && \
     rm -rf linux_openmp_64.tgz
 
-# install miniconda
-RUN wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh && \
-    bash Miniconda-3.8.3-Linux-x86_64.sh -b -p /usr/local/bin/miniconda && \
-    rm -rf Miniconda-3.8.3-Linux-x86_64.sh && python -v
-
-# install python requirements
-RUN conda install -y pip scipy lockfile
-RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn pyPdf2 xhtml2pdf indi-tools ConfigParser
-
-# the first time nipype runs it will create a configuration directory, do it here
-# to avoid problems in the future
-RUN /usr/local/bin/miniconda/bin/python -c "import nipype" 2> /dev/null
-
-#install latest version of qap
-RUN cd /tmp/ && \
-    git clone -b 1.0.8 https://github.com/preprocessed-connectomes-project/quality-assessment-protocol.git && \
-    cd quality-assessment-protocol && python setup.py build && python setup.py install
-
 ## Install the validator
 RUN apt-get update && \
     apt-get install -y curl && \
@@ -50,6 +32,30 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN npm install -g bids-validator
+
+# install miniconda
+RUN wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh && \
+    bash Miniconda-3.8.3-Linux-x86_64.sh -b -p /usr/local/bin/miniconda && \
+    rm -rf Miniconda-3.8.3-Linux-x86_64.sh && python -v
+
+# install python requirements
+RUN conda install -y pip scipy lockfile ipython
+RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn pyPdf2 xhtml2pdf indi-tools ConfigParser argparse html5lib wsgiref
+
+# Found in qap compile code:
+# argparse
+# html5lib (>=1.0b8)
+# wsgiref (>=0.1.2)
+# xhtml2pdf (>=0.1a4)
+
+# the first time nipype runs it will create a configuration directory, do it here
+# to avoid problems in the future
+RUN /usr/local/bin/miniconda/bin/python -c "import nipype" 2> /dev/null
+
+#install latest version of qap
+RUN cd /tmp/ && \
+    git clone -b 1.0.8 https://github.com/preprocessed-connectomes-project/quality-assessment-protocol.git && \
+    cd quality-assessment-protocol && python setup.py build && python setup.py install
 
 RUN mkdir /scratch && mkdir /local-scratch && mkdir -p /code && mkdir -p /qap_resources
 COPY qap_templates.tar.gz /qap_resources/qap_templates.tar.gz
@@ -62,6 +68,4 @@ RUN chmod +x /code/run.py && cd /qap_resources \
 
 
 ENTRYPOINT ["/code/run.py"]
-
-
 
