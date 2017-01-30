@@ -1,8 +1,8 @@
 FROM ubuntu:trusty
 MAINTAINER John Pellman <john.pellman@childmind.org>
 
-# ENV http_proxy 'http://proxy.tch.harvard.edu:3128'
-# ENV https_proxy 'http://proxy.tch.harvard.edu:3128'
+ENV http_proxy 'http://proxy.tch.harvard.edu:3128'
+ENV https_proxy 'http://proxy.tch.harvard.edu:3128'
 
 ENV AFNIPATH /opt/afni/bin/
 ENV PATH /code:/opt/afni/bin:/usr/local/bin/miniconda/bin:${PATH}
@@ -40,13 +40,7 @@ RUN wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh && \
 
 # install python requirements
 RUN conda install -y pip scipy lockfile ipython
-RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn pyPdf2 xhtml2pdf indi-tools ConfigParser argparse html5lib wsgiref
-
-# Found in qap compile code:
-# argparse
-# html5lib (>=1.0b8)
-# wsgiref (>=0.1.2)
-# xhtml2pdf (>=0.1a4)
+RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn pyPdf2 xhtml2pdf=0.1b2 indi-tools ConfigParser argparse html5lib==1.0b10 wsgiref
 
 # the first time nipype runs it will create a configuration directory, do it here
 # to avoid problems in the future
