@@ -2,7 +2,7 @@
 import os
 import subprocess
 from subprocess import Popen, PIPE
-from shutil import rmtree
+from shutil import rmtree, copy
 import argparse
 from glob import glob
 import datetime, time
@@ -106,9 +106,8 @@ if args.analysis_level.lower() == 'participant':
 
     if args.participant_label:
         for pt in args.participant_label:
-            file_paths+=glob(os.path.join(args.bids_dir,"sub-%s"%(pt),
-                "*","*.nii*"))+glob(os.path.join(args.bids_dir,"sub-%s"%(pt),
-                "*","*","*.nii*"))
+            file_paths+=glob(os.path.join(args.bids_dir,"sub-%s"%(pt),"*","*.nii*"))+\
+                        glob(os.path.join(args.bids_dir,"sub-%s"%(pt),"*","*","*.nii*"))
     else:
         file_paths=glob(os.path.join(args.bids_dir,"*","*.nii*"))+\
                    glob(os.path.join(args.bids_dir,"*","*","*.nii*"))+\
@@ -134,5 +133,7 @@ if args.analysis_level.lower() == 'participant':
 
 else:
     print "Running group level analysis to merge participant results"
-    os.system('qap_merge_outputs.py %s'%c['output_directory'])
-    print "finished"
+    os.system("qap_jsons_to_csv.py %s"%(c['output_directory']))
+    csv_files=glob("*.csv")
+    for i in csv_files:
+        copy(i, c['output_directory'])
