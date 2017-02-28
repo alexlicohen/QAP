@@ -40,16 +40,17 @@ RUN wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh && \
 
 # install python requirements
 RUN conda install -y pip scipy lockfile ipython
-RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn pyPdf2 html5lib==1.0b8 xhtml2pdf==0.1b2 indi-tools ConfigParser argparse wsgiref
+# RUN pip install nipype==0.12.1 nibabel nitime pyyaml pandas seaborn pyPdf2 html5lib==1.0b8 xhtml2pdf==0.1b2 indi-tools ConfigParser argparse wsgiref
+
+#install latest version of qap
+# RUN cd /tmp/ && \
+#     git clone https://github.com/preprocessed-connectomes-project/quality-assessment-protocol.git && \
+#     cd quality-assessment-protocol && python setup.py build && python setup.py install
+RUN pip install qap
 
 # the first time nipype runs it will create a configuration directory, do it here
 # to avoid problems in the future
 RUN /usr/local/bin/miniconda/bin/python -c "import nipype" 2> /dev/null
-
-#install latest version of qap
-RUN cd /tmp/ && \
-    git clone https://github.com/preprocessed-connectomes-project/quality-assessment-protocol.git && \
-    cd quality-assessment-protocol && python setup.py build && python setup.py install
 
 RUN mkdir /scratch && mkdir /local-scratch && mkdir -p /code && mkdir -p /qap_resources
 COPY qap_templates.tar.gz /qap_resources/qap_templates.tar.gz

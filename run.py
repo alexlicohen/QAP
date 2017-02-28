@@ -80,7 +80,7 @@ c = yaml.load(open(os.path.realpath(args.pipeline_file), 'r'))
 
 # set the parameters using the command line arguments
 c['output_directory']  = os.path.abspath(c['output_directory'])
-c['num_subjects_per_bundle'] = int(args.n_cpus)
+c['num_sessions_at_once'] = int(args.n_cpus)
 if( args.save_working_dir == True ):
     c['write_all_outputs'] = True
     c['working_directory'] = create_dir(args.output_dir, "working")
@@ -90,11 +90,11 @@ else:
 
 c['write_report'] = args.report
 c['num_processors'] = int(args.n_cpus)
-c['memory_allocated'] = int(args.mem)
+c['available_memory'] = int(args.mem)
 
 
 print ("#### Running QAP on %s"%(args.participant_label))
-print ("Number of subjects to run in parallel: %d"%(c['num_subjects_per_bundle']))
+print ("Number of subjects to run in parallel: %d"%(c['num_sessions_at_once']))
 print ("Output directory: %s"%(c['output_directory']))
 print ("Working directory: %s"%(c['working_directory']))
 print ("Save working directory: %s"%(c['write_all_outputs']))
@@ -102,38 +102,22 @@ print ("Save working directory: %s"%(c['write_all_outputs']))
 
 if args.analysis_level.lower() == 'participant':
        
-    file_paths=[]
-
-    if args.participant_label:
-        for pt in args.participant_label:
-            file_paths+=glob(os.path.join(args.bids_dir,"sub-%s"%(pt),"*","*.nii*"))+\
-                        glob(os.path.join(args.bids_dir,"sub-%s"%(pt),"*","*","*.nii*"))
-    else:
-        file_paths=glob(os.path.join(args.bids_dir,"*","*.nii*"))+\
-                   glob(os.path.join(args.bids_dir,"*","*","*.nii*"))+\
-                   glob(os.path.join(args.bids_dir,"*","*","*","*.nii*"))
-
-    sub_list = extract_bids_data(file_paths)
- 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d%H%M%S')
     subject_list_file=os.path.join(args.output_dir,"bids_run_sublist_%s.yml"%(st))
-    with open(subject_list_file, 'w') as f:
-        yaml.dump(sub_list, f)
+    os.system("qap_sublist_generator.py --BIDS %s %s"%(args.bids_dir,os.path.join(args.output_dir,subject_list_file)))
 
     #update config file
     config_file=os.path.join(args.output_dir,"bids_run_config_%s.yml"%(st))
     with open(config_file, 'w') as f:
         yaml.dump(c, f)
 
-    #build pipeline
-    from qap.cli import QAProtocolCLI
-    obj = QAProtocolCLI(parse_args=False)
-    obj.run(config_file, subject_list_file)
+    #run pipeline
+    os.system("qap_measures_pipeline.py %s %s"%(subject_list_file,config_file))
 
 else:
     print "Running group level analysis to merge participant results"
     os.system("qap_jsons_to_csv.py %s"%(c['output_directory']))
-    csv_files=glob("*.csv")
-    for i in csv_files:
-        copy(i, c['output_directory'])
+    # csv_files=glob("*.csv")
+    # for i in csv_files:
+    #     copy(i, c['output_directory'])
