@@ -5,13 +5,13 @@ pipeline_name: QAP_bids_app_default
 num_processors: 1
 
 # how many participants to run per workflow
-num_participants_at_once: 1
+num_sessions_at_once: 1
 
 # the amount of memory (in GB) to allocate to each participant
-memory_allocated_per_participant: 2
+memory_allocated: 2
 
-# which resource manager being used, if any
-resource_manager: None
+# which cluster system being used, if any
+cluster_system: None
 
 # where to place output files
 output_directory: /output 
