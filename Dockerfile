@@ -48,7 +48,7 @@ RUN /usr/local/bin/miniconda/bin/python -c "import nipype" 2> /dev/null
 
 #install latest version of qap
 RUN cd /tmp/ && \
-    git clone -b 1.0.8 https://github.com/preprocessed-connectomes-project/quality-assessment-protocol.git && \
+    git clone https://github.com/preprocessed-connectomes-project/quality-assessment-protocol.git && \
     cd quality-assessment-protocol && python setup.py build && python setup.py install
 
 RUN mkdir /scratch && mkdir /local-scratch && mkdir -p /code && mkdir -p /qap_resources
