@@ -101,11 +101,20 @@ print ("Save working directory: %s"%(c['write_all_outputs']))
 
 
 if args.analysis_level.lower() == 'participant':
-       
+    
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d%H%M%S')
-    subject_list_file=os.path.join(args.output_dir,"bids_run_sublist_%s.yml"%(st))
-    os.system("qap_sublist_generator.py --BIDS %s %s"%(args.bids_dir,os.path.join(args.output_dir,subject_list_file)))
+
+    if args.participant_label:
+        for pt in args.participant_label:
+            include_participants+=glob("sub-%s"%(pt))
+        include_file=os.path.join(args.output_dir,"bids_run_particList_%s.txt"%(st))
+        subject_list_file=os.path.join(args.output_dir,"bids_run_sublist_%s.yml"%(st))
+        os.system("qap_sublist_generator.py --include %s --BIDS %s %s"%(include_file,args.bids_dir,os.path.join(args.output_dir,subject_list_file)))
+    else:
+        include_participants=""
+        subject_list_file=os.path.join(args.output_dir,"bids_run_sublist_%s.yml"%(st))
+        os.system("qap_sublist_generator.py --BIDS %s %s"%(args.bids_dir,os.path.join(args.output_dir,subject_list_file)))
 
     #update config file
     config_file=os.path.join(args.output_dir,"bids_run_config_%s.yml"%(st))
